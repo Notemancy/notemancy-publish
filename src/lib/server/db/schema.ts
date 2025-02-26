@@ -15,6 +15,14 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()
 });
 
+export const pagetable = sqliteTable('pagetable', {
+    id: integer('id').primaryKey().unique(), // INTEGER PRIMARY KEY auto-increments in SQLite
+		virtualPath: text('virtual_path').notNull().unique(),
+		localPath: text('local_path').notNull(),
+    mdContent: text('mdcontent').notNull(),
+    metadata: text('metadata').notNull(), // JSON as text to store stringified JSON
+});
+
 export type Session = typeof session.$inferSelect;
 
 export type User = typeof user.$inferSelect;
