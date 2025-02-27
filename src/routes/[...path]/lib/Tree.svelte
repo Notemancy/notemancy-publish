@@ -78,7 +78,7 @@
 			<a
 				href={'/' + treeItem.link}
 				class={'flex w-full items-center gap-2 rounded-md p-1 hover:bg-gray-50 focus:outline-none dark:hover:bg-gray-700 ' +
-					($isSelected(itemId) ? 'bg-gray-200' : '')}
+					($isSelected(itemId) ? 'bg-gray-100 dark:bg-gray-700' : '')}
 				use:melt={$item({ id: itemId, hasChildren: false })}
 			>
 				<span class="inline-block h-4 w-4"></span>

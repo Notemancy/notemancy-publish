@@ -59,31 +59,44 @@
 		currentVirtualPath = decodeURIComponent(path);
 	});
 
-	// ─────────────────────────────
-	// Dark Mode & Sidebar (simplified)
-	// ─────────────────────────────
+	/*──────────────────────────────
+    Dark Mode Toggling & Sidebar
+  ──────────────────────────────*/
+	// Initialize the theme; default to 'light'
 	let currentTheme: 'dark' | 'light' = $state('light');
-	function updateTheme(theme: 'dark' | 'light') {
-		currentTheme = theme;
-		if (typeof window !== 'undefined') {
-			document.documentElement.classList.toggle('dark', theme === 'dark');
-			localStorage.setItem('theme', theme);
-		}
-	}
-	function toggleTheme() {
-		updateTheme(currentTheme === 'dark' ? 'light' : 'dark');
-	}
+
+	// Set up the initial theme on mount (using localStorage if available)
 	onMount(() => {
-		if (typeof window !== 'undefined') {
-			const storedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
-			if (storedTheme === 'dark' || storedTheme === 'light') {
-				updateTheme(storedTheme);
-			} else {
-				const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-				updateTheme(systemPrefersDark ? 'dark' : 'light');
-			}
+		const storedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+		if (storedTheme === 'dark' || storedTheme === 'light') {
+			currentTheme = storedTheme;
 		}
+		applyTheme(currentTheme);
 	});
+
+	// A helper function to update the document class and persist the setting
+	function applyTheme(theme: 'dark' | 'light') {
+		if (theme === 'dark') {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+		localStorage.setItem('theme', theme);
+	}
+
+	// Toggle the theme and reinitialize Carta
+	function toggleTheme() {
+		currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+		applyTheme(currentTheme);
+		// Reinitialize Carta with the updated theme.
+		carta = getCartaInstance(currentTheme, true);
+	}
+
+	// Dummy implementation for initializeCarta, remove or replace with your real function.
+	function initializeCarta() {
+		console.log('Carta reinitialized with', currentTheme, 'theme');
+	}
+
 	let sidebarOpen = $state(true);
 	let sidebarWidth = $state('');
 	let toggleAlignment = $state('');
@@ -133,63 +146,8 @@
 	// ─────────────────────────────
 	// Carta Editor Initialization
 	// ─────────────────────────────
-	const mermaid: Plugin = {
-		transformers: [
-			{
-				execution: 'async',
-				type: 'rehype',
-				transform({ processor }) {
-					processor.use(rehypeMermaid, { strategy: 'img-png' });
-				}
-			}
-		]
-	};
-	const callouts: Plugin = {
-		transformers: [
-			{
-				execution: 'async',
-				type: 'rehype',
-				transform({ processor }) {
-					processor.use(rehypeCallouts);
-				}
-			}
-		]
-	};
 	let editorTheme = min_light;
-	function initializeCarta() {
-		editorTheme = currentTheme === 'dark' ? min_dark : min_light;
-		carta = new Carta({
-			theme: editorTheme,
-			shikiOptions: { themes: [min_light, min_dark] },
-			extensions: [
-				cartawiki,
-				math(),
-				callouts,
-				mermaid,
-				anchor(),
-				code({
-					langs: ['javascript', 'docker', 'py', 'markdown', 'yaml', 'toml', 'bash']
-				})
-			],
-			sanitizer: DOMPurify.sanitize
-		});
-	}
-	/*let carta = new Carta({
-		theme: editorTheme,
-		shikiOptions: { themes: [min_light, min_dark] },
-		extensions: [
-			cartawiki,
-			math(),
-			callouts,
-			anchor(),
-			mermaid,
-			code({
-				langs: ['javascript', 'docker', 'py', 'markdown', 'yaml', 'toml', 'bash']
-			})
-		],
-		sanitizer: DOMPurify.sanitize
-	});*/
-	let carta = getCartaInstance(currentTheme);
+	let carta = $state(getCartaInstance('light'));
 
 	let isEditing = $state(false);
 	let showCommandPalette = $state(false);
@@ -203,7 +161,7 @@
 		if (event.ctrlKey && event.key.toLowerCase() === 'l') {
 			isEditing = !isEditing;
 			event.preventDefault();
-		} else if (event.ctrlKey && event.key.toLowerCase() === 'p') {
+		} else if (event.ctrlKey && event.key.toLowerCase() === 'k') {
 			showCommandPalette = true;
 			event.preventDefault();
 		}
@@ -241,19 +199,7 @@
 				/>
 			</button>
 			{#if sidebarOpen}
-				<button
-					onclick={() => {
-						if (currentTheme === 'light') {
-							document.documentElement.classList.add('dark');
-							currentTheme = 'dark';
-						} else {
-							document.documentElement.classList.remove('dark');
-							currentTheme = 'light';
-						}
-						// Reinitialize Carta with the updated theme.
-						initializeCarta();
-					}}
-				>
+				<button onclick={toggleTheme}>
 					{#if currentTheme === 'dark'}
 						<Icon
 							icon="tabler:sun-filled"
@@ -302,16 +248,24 @@
 				</div>
 			</div>
 
-			<div
-				id="mdcontent"
-				class="prose prose-base dark:prose-invert max-w-[700px] font-[Noto_Sans] font-normal"
-			>
-				{#key currentTheme}
-					{#key md}
-						<Markdown {carta} value={md} />
+			{#if isEditing}
+				<div class="prose prose-sm dark:prose-invert max-w-[700px]">
+					{#key currentTheme}
+						<MarkdownEditor {carta} bind:value={md} disableToolbar={true} theme={'tw'} />
 					{/key}
-				{/key}
-			</div>
+				</div>
+			{:else}
+				<div
+					id="mdcontent"
+					class="prose dark:prose-invert max-w-[700px] font-[Noto_Sans] font-normal"
+				>
+					{#key currentTheme}
+						{#key md}
+							<Markdown {carta} value={md} />
+						{/key}
+					{/key}
+				</div>
+			{/if}
 
 			<!-- TOC Sidebar -->
 		</div>

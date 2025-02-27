@@ -22,7 +22,7 @@ export const load: PageServerLoad<PageData> = async ({ params }): Promise<PageDa
 
   try {
     // Query the database directly for the record matching the virtual_path.
-    const records = await db
+    const records = db
       .select()
       .from(pagetable)
       .where(sql`${pagetable.virtualPath} = ${virtual_path}`)

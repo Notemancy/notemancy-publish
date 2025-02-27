@@ -66,13 +66,18 @@ function buildTree(files: FileRecord[]): TreeItem[] {
 					// For the final segment, create a file node.
 					let title = part;
 					try {
-						const meta = JSON.parse(file.metadata);
-						if (meta.title) {
-							title = meta.title;
-						}
+					  let meta = JSON.parse(file.metadata);
+					  // If the result is a string, parse it again.
+					  if (typeof meta === 'string') {
+					    meta = JSON.parse(meta);
+					  }
+					  if (meta.title) {
+					    title = meta.title;
+					  }
 					} catch (e) {
-						// Fallback to using the file name if metadata parsing fails.
+					  // Fallback to using the file name if metadata parsing fails.
 					}
+
 					node = { title, link: file.virtualPath };
 				}
 				currentLevel.push(node);
