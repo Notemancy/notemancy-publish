@@ -37,7 +37,9 @@
 	}
 </script>
 
-<div class="prose prose-sm fixed right-5 bottom-8 z-50 ml-0 w-[300px] rounded pl-0 dark:invert">
+<div
+	class="prose prose-sm fixed right-5 bottom-16 z-50 ml-0 w-[300px] rounded pl-0 lg:bottom-8 dark:invert"
+>
 	<h3 class="mb-2 font-semibold">Connected Notes</h3>
 	{#if loading}
 		<p>Loading...</p>

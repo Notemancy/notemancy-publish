@@ -1,6 +1,5 @@
 // src/routes/+page.server.ts
 import type { PageServerLoad } from './$types';
-import { env } from '$env/dynamic/public';
 import { db } from '$lib/server/db';
 import { pagetable } from '$lib/server/db/schema';
 import { sql } from 'drizzle-orm';
@@ -11,18 +10,15 @@ export type PageData = {
 };
 
 export const load: PageServerLoad<PageData> = async ({ params }): Promise<PageData> => {
-  // Determine the virtual path.
   let virtual_path = 'home.md';
   if (params.path) {
-    // When using a catch-all ([...path]), params.path is an array.
     const pathString = Array.isArray(params.path) ? params.path.join('/') : params.path;
-    virtual_path = pathString;// + '.md';
+    virtual_path = pathString;
   }
-  console.log("GOT: ", virtual_path)
+  console.log("GOT virtual_path:", virtual_path);
 
   try {
-    // Query the database directly for the record matching the virtual_path.
-    const records = db
+    const records = await db
       .select()
       .from(pagetable)
       .where(sql`${pagetable.virtualPath} = ${virtual_path}`)
@@ -37,10 +33,25 @@ export const load: PageServerLoad<PageData> = async ({ params }): Promise<PageDa
     }
 
     const record = records[0];
-    let metadata: Record<string, any>;
+    let metadata: Record<string, any> = {};
     try {
-      metadata = JSON.parse(record.metadata);
+      // First, try to parse the metadata string.
+      let parsed = typeof record.metadata === 'string'
+        ? JSON.parse(record.metadata)
+        : record.metadata;
+
+      console.log('After first parse, type is:', typeof parsed);
+      
+      // If the result is still a string, parse it again.
+      if (typeof parsed === 'string') {
+        parsed = JSON.parse(parsed);
+        console.log('After second parse, type is:', typeof parsed);
+      }
+
+      metadata = parsed;
+      console.log('Final metadata object:', metadata);
     } catch (error) {
+      console.error('Error parsing metadata:', error);
       metadata = {};
     }
 

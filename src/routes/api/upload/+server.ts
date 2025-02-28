@@ -2,32 +2,33 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { pagetable } from '$lib/server/db/schema';
+import matter from 'gray-matter';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		// Parse the incoming JSON payload
 		const payload = await request.json();
+		const { virtual_path, local_path, mdcontent, metadata } = payload;
 		console.log("Received upload payload:", payload);
 
-		// Use the snake_case keys as sent from the client
-		const { virtual_path, local_path, mdcontent, metadata } = payload;
-		console.log("virtual_path:", virtual_path);
-		console.log("local_path:", local_path);
+		// Use gray-matter to remove the frontmatter from the markdown content
+		const parsed = matter(mdcontent);
+		const contentWithoutFrontmatter = parsed.content;
+		console.log("Clean content:", contentWithoutFrontmatter);
 
-		// Insert a new record into the pagetable.
-		// If a record with the same virtualPath exists, update it instead.
-		const result = db.insert(pagetable)
+		// Insert or update a record in the pagetable using the clean content
+		const result = await db.insert(pagetable)
 			.values({
 				virtualPath: virtual_path,
 				localPath: local_path,
-				mdContent: mdcontent,
+				mdContent: contentWithoutFrontmatter,
 				metadata: JSON.stringify(metadata)
 			})
 			.onConflictDoUpdate({
 				target: [pagetable.virtualPath],
 				set: {
 					localPath: local_path,
-					mdContent: mdcontent,
+					mdContent: contentWithoutFrontmatter,
 					metadata: JSON.stringify(metadata)
 				}
 			})
