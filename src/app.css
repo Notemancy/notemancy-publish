@@ -40,8 +40,8 @@
   --tw-prose-bullets: var(--color-blue-600);
   --tw-prose-body: var(--color-gray-600);
   --tw-prose-headings: var(--color-gray-800);
-  --tw-prose-invert-body: var(--color-gray-100);
-  --tw-prose-invert-headings: var(--color-gray-50);
+  --tw-prose-invert-body: var(--color-gray-300);
+  --tw-prose-invert-headings: var(--color-gray-100);
   --tw-prose-counters: var(--color-blue-600);
   --tw-prose-invert-bullets: var(--color-blue-400);
   --tw-prose-invert-counters: var(--color-blue-400);

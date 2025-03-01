@@ -3,6 +3,7 @@
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { page } from '$app/stores';
 	import Logo from './lib/Logo.svelte';
+	import Logo2 from './lib/Logo2.svelte';
 	import { slide } from 'svelte/transition';
 
 	import min_dark from 'shiki/themes/min-dark.mjs';
@@ -217,34 +218,34 @@
 	<!-- Desktop Layout -->
 	<div class="relative min-h-screen bg-white p-4 pt-4 lg:p-8 lg:pt-5 dark:bg-gray-800">
 		<!-- Left Sidebar (Desktop only) -->
+		<div class="fixed top-4 right-4 z-50">
+			<button onclick={toggleTheme}>
+				{#if currentTheme === 'dark'}
+					<Icon
+						icon="tabler:sun-filled"
+						width="20"
+						height="20"
+						class="text-gray-100 transition-all duration-300"
+					/>
+				{:else}
+					<Icon
+						icon="ph:moon-fill"
+						width="18"
+						height="18"
+						class="text-gray-700 transition-all duration-300"
+					/>
+				{/if}
+			</button>
+		</div>
 		<div
 			class="fixed top-4 left-0 hidden overflow-hidden transition-all duration-100 lg:block dark:bg-gray-800"
 			style="width: {sidebarWidth}; height: calc(100vh - 1rem);"
 		>
-			<div class="flex h-12 items-center px-2 {toggleAlignment} mb-4">
-				<div class="h-10 w-10">
-					<Logo />
-				</div>
-				<div class="fixed top-4 right-4">
-					<button onclick={toggleTheme}>
-						{#if currentTheme === 'dark'}
-							<Icon
-								icon="tabler:sun-filled"
-								width="20"
-								height="20"
-								class="text-gray-100 transition-all duration-300"
-							/>
-						{:else}
-							<Icon
-								icon="ph:moon-fill"
-								width="18"
-								height="18"
-								class="text-gray-700 transition-all duration-300"
-							/>
-						{/if}
-					</button>
-				</div>
-				<button onclick={() => (sidebarOpen = !sidebarOpen)} class="flex items-center">
+			<div class="flex items-center px-2 {toggleAlignment} mb-4">
+				{#if sidebarOpen}
+					<div class="font-[Megrim] text-2xl font-semibold dark:text-gray-100">NOTEMANCY</div>
+				{/if}
+				<button onclick={() => (sidebarOpen = !sidebarOpen)} class="ml-auto flex items-center">
 					<Icon
 						icon="ph:dots-nine-fill"
 						width="32"
@@ -326,8 +327,9 @@
 				in:slide={{ duration: 100 }}
 				out:slide={{ duration: 100 }}
 			>
-				<div class="mb-4 flex h-14 w-14 justify-center">
-					<Logo />
+				<!-- Replace logo with NOTEMANCY text in Megrim font -->
+				<div class="mb-4 flex h-14 w-full items-center justify-center font-[Megrim] text-2xl">
+					NOTEMANCY
 				</div>
 				<FileTree />
 			</div>
@@ -362,10 +364,7 @@
 							{/key}
 						</div>
 					{:else}
-						<div
-							id="mdcontent"
-							class="prose dark:prose-invert max-w-[700px] font-[Noto_Sans] font-normal"
-						>
+						<div id="mdcontent" class="prose dark:prose-invert max-w-[700px] font-[Noto_Sans]">
 							{#key currentTheme}
 								{#key md}
 									<Markdown {carta} value={md} />
@@ -449,49 +448,15 @@
 
 <!-- (Optional) Global styles for markdown, etc. -->
 <style>
-	@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap');
-
-	/*:global(blockquote) {
-    font-family: "Noto Sans Serif", serif;
-    font-size: 1.2em;
-    font-style: italic;
-    color: #444;
-    border-left: 4px solid #ddd;
-    padding: 0.5em 1em;
-    margin: 1.5em 0;
-    background-color: #f9f9f9;
-  }
-  :global(blockquote cite) {
-    display: block;
-    text-align: right;
-    font-size: 0.9em;
-    font-style: normal;
-    color: #666;
-    margin-top: 0.5em;
-  }*/
 	:global(blockquote cite::before) {
 		content: '— ';
 	}
-	/*:global(.shiki) {
-    font-size: 16px;
-  }*/
-
 	:global(img) {
 		border-radius: 6px;
 	}
-
 	:global([id^='mermaid-']) {
 		width: 60vw;
 		max-width: 80vw;
 		position: relative;
 	}
-
-	/*:global(.carta-font-code),
-  :global(.carta-font-code *) {
-    font-family: "Noto Sans", sans-serif !important;
-    font-variant-ligatures: normal !important;
-    font-size: 1rem !important;
-    line-height: 1.5rem !important;
-    caret-color: black;
-  }*/
 </style>
